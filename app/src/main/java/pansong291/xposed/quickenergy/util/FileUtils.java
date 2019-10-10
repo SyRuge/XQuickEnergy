@@ -1,4 +1,4 @@
-package pansong291.xposed.quickenergy;
+package pansong291.xposed.quickenergy.util;
 
 import android.os.Environment;
 import java.io.Closeable;
@@ -12,7 +12,12 @@ public class FileUtils
  private static File directory;
  private static File configFile;
  private static File friendIdMapFile;
- private static File logFile;
+ private static File cooperationIdMapFile;
+ private static File statisticsFile;
+ private static File forestLogFile;
+ private static File farmLogFile;
+ private static File otherLogFile;
+ private static File simpleLogFile;
  private static File runtimeLogFile;
 
  public static File getDirectoryPath()
@@ -57,15 +62,88 @@ public class FileUtils
   return friendIdMapFile;
  }
 
- public static File getLogFile()
+ public static File getCooperationIdMapFile()
  {
-  if(logFile == null)
+  if(cooperationIdMapFile == null)
   {
-   logFile = new File(getDirectoryPath(), "energy.log");
-   if(logFile.exists() && logFile.isDirectory())
-    logFile.delete();
+   cooperationIdMapFile = new File(getDirectoryPath(), "cooperationId.list");
+   if(cooperationIdMapFile.exists() && cooperationIdMapFile.isDirectory())
+    cooperationIdMapFile.delete();
   }
-  return logFile;
+  return cooperationIdMapFile;
+ }
+
+ public static File getStatisticsFile()
+ {
+  if(statisticsFile == null)
+  {
+   statisticsFile = new File(getDirectoryPath(), "statistics.json");
+   if(statisticsFile.exists() && statisticsFile.isDirectory())
+    statisticsFile.delete();
+  }
+  return statisticsFile;
+ }
+
+ public static File getForestLogFile()
+ {
+  if(forestLogFile == null)
+  {
+   forestLogFile = new File(getDirectoryPath(), "forest.log");
+   if(forestLogFile.exists() && forestLogFile.isDirectory())
+    forestLogFile.delete();
+   if(!forestLogFile.exists())
+    try
+    {
+     forestLogFile.createNewFile();
+    }catch(Throwable t)
+    {}
+  }
+  return forestLogFile;
+ }
+
+ public static File getFarmLogFile()
+ {
+  if(farmLogFile == null)
+  {
+   farmLogFile = new File(getDirectoryPath(), "farm.log");
+   if(farmLogFile.exists() && farmLogFile.isDirectory())
+    farmLogFile.delete();
+   if(!farmLogFile.exists())
+    try
+    {
+     farmLogFile.createNewFile();
+    }catch(Throwable t)
+    {}
+  }
+  return farmLogFile;
+ }
+
+ public static File getOtherLogFile()
+ {
+  if(otherLogFile == null)
+  {
+   otherLogFile = new File(getDirectoryPath(), "other.log");
+   if(otherLogFile.exists() && otherLogFile.isDirectory())
+    otherLogFile.delete();
+   if(!otherLogFile.exists())
+    try
+    {
+     otherLogFile.createNewFile();
+    }catch(Throwable t)
+    {}
+  }
+  return otherLogFile;
+ }
+
+ public static File getSimpleLogFile()
+ {
+  if(simpleLogFile == null)
+  {
+   simpleLogFile = new File(getDirectoryPath(), "simple.log");
+   if(simpleLogFile.exists() && simpleLogFile.isDirectory())
+    simpleLogFile.delete();
+  }
+  return simpleLogFile;
  }
 
  public static File getRuntimeLogFile()
@@ -105,14 +183,18 @@ public class FileUtils
   return result.toString();
  }
 
- public static boolean append2LogFile(String s)
+ public static boolean append2SimpleLogFile(String s)
  {
-  return append2File(Log.getFormatDate() + "  " + s + "\n", getLogFile());
+  if(getSimpleLogFile().length() > 31_457_280) // 30MB
+   getSimpleLogFile().delete();
+  return append2File(Log.getFormatDateTime() + "  " + s + "\n", getSimpleLogFile());
  }
 
  public static boolean append2RuntimeLogFile(String s)
  {
-  return append2File(Log.getFormatDate() + "  " + s + "\n", getRuntimeLogFile());
+  if(getRuntimeLogFile().length() > 31_457_280) // 30MB
+   getRuntimeLogFile().delete();
+  return append2File(Log.getFormatDateTime() + "  " + s + "\n", getRuntimeLogFile());
  }
 
  public static boolean write2File(String s, File f)

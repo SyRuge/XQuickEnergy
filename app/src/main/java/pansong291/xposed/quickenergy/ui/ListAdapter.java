@@ -1,6 +1,7 @@
 package pansong291.xposed.quickenergy.ui;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +10,6 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import java.util.List;
 import pansong291.xposed.quickenergy.R;
-import android.graphics.Color;
 
 public class ListAdapter extends BaseAdapter
 {
@@ -23,7 +23,7 @@ public class ListAdapter extends BaseAdapter
  }
 
  Context context;
- List<AlipayUser>list;
+ List<?> list;
  List<String> selects;
  int findIndex = -1;
  CharSequence findWord = null;
@@ -33,8 +33,9 @@ public class ListAdapter extends BaseAdapter
   context = c;
  }
 
- public void setAlipayUserList(List<AlipayUser> l)
+ public void setBaseList(List<?> l)
  {
+  if(l != list) exitFind();
   list = l;
  }
 
@@ -43,23 +44,51 @@ public class ListAdapter extends BaseAdapter
   selects = l;
  }
 
- public int find(CharSequence cs)
+ public int findLast(CharSequence cs)
  {
+  if(list == null || list.size() == 0) return -1;
   if(!cs.equals(findWord))
   {
    findIndex = -1;
+   findWord = cs;
   }
-  findWord = cs;
-  int i = findIndex + 1;
-  if(i == list.size()) i = 0;
-  for(;i < list.size(); i++)
+  int i = findIndex;
+  if(i < 0) i = list.size(); 
+  for(;;)
   {
-   if(list.get(i).name.contains(cs))
+   i = (i + list.size() - 1) % list.size();
+   AlipayId ai = (AlipayId) list.get(i);
+   if(ai.name.contains(cs))
    {
     findIndex = i;
     break;
    }
-   if(findIndex >= 0 && i == list.size() - 1) i = -1;
+   if(findIndex < 0 && i == 0)
+    break;
+  }
+  notifyDataSetChanged();
+  return findIndex;
+ }
+
+ public int findNext(CharSequence cs)
+ {
+  if(list == null || list.size() == 0) return -1;
+  if(!cs.equals(findWord))
+  {
+   findIndex = -1;
+   findWord = cs;
+  }
+  for(int i = findIndex;;)
+  {
+   i = (i + 1) % list.size();
+   AlipayId ai = (AlipayId) list.get(i);
+   if(ai.name.contains(cs))
+   {
+    findIndex = i;
+    break;
+   }
+   if(findIndex < 0 && i == list.size() - 1)
+    break;
   }
   notifyDataSetChanged();
   return findIndex;
@@ -68,13 +97,12 @@ public class ListAdapter extends BaseAdapter
  public void exitFind()
  {
   findIndex = -1;
-  notifyDataSetChanged();
  }
 
  @Override
  public int getCount()
  {
-  return list.size();
+  return list == null ? 0: list.size();
  }
 
  @Override
@@ -105,10 +133,10 @@ public class ListAdapter extends BaseAdapter
    vh = (ViewHolder)p2.getTag();
   }
 
-  AlipayUser au = list.get(p1);
-  vh.tv.setText(au.name);
+  AlipayId ai = (AlipayId) list.get(p1);
+  vh.tv.setText(ai.name);
   vh.tv.setTextColor(findIndex == p1 ? Color.RED: Color.BLACK);
-  vh.cb.setChecked(selects == null ? false: selects.contains(au.id));
+  vh.cb.setChecked(selects == null ? false: selects.contains(ai.id));
   return p2;
  }
 
